@@ -36,6 +36,9 @@ class MyPrompt(Cmd):
             num_bars = bar_width - int(progress * bar_width)
             print("[" + num_bars * "#" + (bar_width - num_bars) * " " + "]" + str(int(remaining)) + "s remaining")
             print("-" * (bar_width + 10))
+        if not player_data['jobs']:
+            print("No jobs are currently running.")
+
 
     def do_resources(self, args):
         """List available resources."""
@@ -46,9 +49,13 @@ class MyPrompt(Cmd):
     def do_buildings(self, args):
         """List the buildings of the city and their levels."""
         global player_data
+        any_building = False
         for name, level in player_data['buildings'].items():
             if level > 0:
+                any_building = True
                 print("{}, level {}".format(name.title(), level))
+        if not any_building:
+            print("There are no buildings in this city.")
 
     def do_exit(self, args):
         """Exits the program."""
