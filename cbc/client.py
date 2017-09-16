@@ -2,6 +2,7 @@ from getpass import getpass
 import websocket
 import _thread
 import json
+import time
 
 from cmd import Cmd
 
@@ -29,6 +30,12 @@ class MyPrompt(Cmd):
                 print("Training level {} {}.".format(product['level'], product['name'].title()))
             else:
                 print("Unknown job: " + job)
+            bar_width = 20
+            remaining = job['finish_time'] - time.time()
+            progress = remaining / job['product']['time']
+            num_bars = bar_width - int(progress * bar_width)
+            print("[" + num_bars * "#" + (bar_width - num_bars) * " " + "]" + str(int(remaining)) + "s remaining")
+            print("-" * (bar_width + 10))
 
     def do_resources(self, args):
         """List available resources."""
