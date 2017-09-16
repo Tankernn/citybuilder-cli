@@ -22,12 +22,13 @@ class MyPrompt(Cmd):
     def do_jobs(self, args):
         """List the current running jobs."""
         global player_data
+        global server_config
         for job in player_data['jobs']:
             product = job['product']
             if product['type'] == "building":
-                print("Upgrading {} to level {}.".format(product['name'].title(), player_data['buildings'][product['name']] + 1))
+                print("Upgrading {} to level {}.".format(server_config['building'][product['name']]['name'], player_data['buildings'][product['name']] + 1))
             elif product['type'] == "unit":
-                print("Training level {} {}.".format(product['level'], product['name'].title()))
+                print("Training level {} {}.".format(product['level'], server_config['unit'][product['name']]['name']))
             else:
                 print("Unknown job: " + job)
             bar_width = 20
@@ -49,11 +50,12 @@ class MyPrompt(Cmd):
     def do_buildings(self, args):
         """List the buildings of the city and their levels."""
         global player_data
+        global server_config
         any_building = False
         for name, level in player_data['buildings'].items():
             if level > 0:
                 any_building = True
-                print("{}, level {}".format(name.title(), level))
+                print("{}, level {}".format(server_config['building'][name]['name'], level))
         if not any_building:
             print("There are no buildings in this city.")
 
