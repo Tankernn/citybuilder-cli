@@ -73,9 +73,12 @@ def send_json(ws, message):
 
 def on_message(ws, message):
     global player_data
+    global server_config
     data = json.loads(message)
     if 'username' in data:
         player_data = data
+    elif 'server' in data:
+        server_config = data
 
 def on_error(ws, error):
     print(error)
