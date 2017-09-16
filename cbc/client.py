@@ -18,6 +18,31 @@ class MyPrompt(Cmd):
             'building': args,
         })
 
+    def do_jobs(self, args):
+        """List the current running jobs."""
+        global player_data
+        for job in player_data['jobs']:
+            product = job['product']
+            if product['type'] == "building":
+                print("Upgrading {} to level {}.".format(product['name'].title(), player_data['buildings'][product['name']] + 1))
+            elif product['type'] == "unit":
+                print("Training level {} {}.".format(product['level'], product['name'].title()))
+            else:
+                print("Unknown job: " + job)
+
+    def do_resources(self, args):
+        """List available resources."""
+        global player_data
+        for resource, amount in player_data['resources'].items():
+            print(resource.title() + ": " + str(amount))
+
+    def do_buildings(self, args):
+        """List the buildings of the city and their levels."""
+        global player_data
+        for name, level in player_data['buildings'].items():
+            if level > 0:
+                print("{}, level {}".format(name.title(), level))
+
     def do_exit(self, args):
         """Exits the program."""
         print("Exiting.")
@@ -33,7 +58,10 @@ def send_json(ws, message):
     ws.send(json.dumps(message))
 
 def on_message(ws, message):
-    print(message)
+    global player_data
+    data = json.loads(message)
+    if 'username' in data:
+        player_data = data
 
 def on_error(ws, error):
     print(error)
