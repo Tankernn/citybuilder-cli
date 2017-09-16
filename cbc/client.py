@@ -45,7 +45,7 @@ class MyPrompt(Cmd):
         """List available resources."""
         global player_data
         for resource, amount in player_data['resources'].items():
-            print(resource.title() + ": " + str(int(amount)))
+            print(resource.title() + ": " + str(int(amount)) + " / " + str(player_data['resources_max'][resource]))
 
     def do_buildings(self, args):
         """List the buildings of the city and their levels."""
