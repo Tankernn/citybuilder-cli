@@ -15,7 +15,7 @@ class MyPrompt(Cmd):
         """Starts the construction of a building."""
         send_json(self.ws, {
             'type': "build",
-            'building': args,
+            'name': args,
         })
 
     def do_jobs(self, args):
