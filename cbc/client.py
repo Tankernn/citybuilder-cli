@@ -19,6 +19,15 @@ class MyPrompt(Cmd):
             'name': args,
         })
 
+    def do_train(self, args):
+        """Starts the training of a unit."""
+        args = args.split(" ")
+        send_json(self.ws, {
+            'type': "train",
+            'name': args[0],
+            'level': args[1] if len(args) > 1 else 1
+        })
+
     def do_jobs(self, args):
         """List the current running jobs."""
         global player_data
@@ -58,6 +67,16 @@ class MyPrompt(Cmd):
                 print("{}, level {}".format(server_config['building'][name]['name'], level))
         if not any_building:
             print("There are no buildings in this city.")
+
+    def do_units(self, args):
+        """List available units."""
+        global player_data
+        global server_config
+        if player_data['units']:
+            for unit in player_data['units']:
+                print("{}, level {}".format(server_config['unit'][unit['type']]['name'], unit['level']))
+        else:
+            print("There are no units in this city.")
 
     def do_exit(self, args):
         """Exits the program."""
