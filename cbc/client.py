@@ -38,8 +38,10 @@ class MyPrompt(Cmd):
                 print("Upgrading {} to level {}.".format(server_config['building'][product['name']]['name'], player_data['buildings'][product['name']] + 1))
             elif product['type'] == "unit":
                 print("Training level {} {}.".format(product['level'], server_config['unit'][product['name']]['name']))
+            elif product['type'] == "mission":
+                print("Mission: {}".format(product['mission']['name']))
             else:
-                print("Unknown job: " + job)
+                print("Unknown job: {}".format(job))
             bar_width = 20
             remaining = job['finish_time'] - time.time()
             progress = remaining / job['product']['time']
@@ -48,6 +50,50 @@ class MyPrompt(Cmd):
             print("-" * (bar_width + 10))
         if not player_data['jobs']:
             print("No jobs are currently running.")
+
+    def do_missions(self, args):
+        """List available missions."""
+        global player_data
+        global server_config
+        for i, mission in enumerate(player_data['missions']):
+            print("{}. {}".format(i + 1, mission['name']))
+            print("Units required:")
+            for unit, count in mission['units'].items():
+                print("\t- {} x{}".format(server_config['unit'][unit]['name'], count))
+            print("Rewards:")
+            print("\tResources:")
+            for resource, amount in mission['rewards']['resources'].items():
+                print("\t- {} x{}".format(resource, amount))
+            print("-" * 20)
+        option = 0
+        opt_len = len(player_data['missions'])
+        while option not in range(1, opt_len + 1):
+            print("[1-{}] or 'c' to cancel: ".format(opt_len), end="", flush=True)
+            try:
+                option = input()
+                if option == 'c':
+                    return
+                else:
+                    option = int(option)
+            except ValueError:
+                print("Please enter an integer.")
+        mission = player_data['missions'][option - 1]
+        units_required = dict(mission['units'])
+        units = list()
+        if mission['type'] == 'gather':
+            for i, unit in enumerate(player_data['units']):
+                if unit['type'] in units_required.keys() and units_required[unit['type']] > 0:
+                    units.append(i)
+                    units_required[unit['type']] -= 1
+        if sum(units_required.values()) == 0:
+            send_json(self.ws, {
+                'type': "mission",
+                'index': option - 1,
+                'units': units,
+            })
+        else:
+            print("Not enough units.")
+
 
 
     def do_resources(self, args):
