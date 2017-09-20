@@ -19,6 +19,13 @@ class MyPrompt(Cmd):
             'name': args,
         })
 
+    def do_research(self, args):
+        """Starts the research of a new technology."""
+        send_json(self.ws, {
+            'type': "research",
+            'name': args,
+        })
+
     def do_train(self, args):
         """Starts the training of a unit."""
         args = args.split(" ")
@@ -36,6 +43,8 @@ class MyPrompt(Cmd):
             product = job['product']
             if product['type'] == "building":
                 print("Upgrading {} to level {}.".format(server_config['building'][product['name']]['name'], player_data['buildings'][product['name']] + 1))
+            elif product['type'] == "research":
+                print("Researching {} level {}.".format(server_config['research'][product['name']]['name'], player_data['research'][product['name']] + 1))
             elif product['type'] == "unit":
                 print("Training level {} {}.".format(product['level'], server_config['unit'][product['name']]['name']))
             elif product['type'] == "mission":
