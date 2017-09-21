@@ -149,13 +149,30 @@ class MyPrompt(Cmd):
     def emptyline(self):
         pass
 
+prompt = None
+
 def send_json(ws, message):
     ws.send(json.dumps(message))
 
 def on_message(ws, message):
     global player_data
     global server_config
+    global prompt
     data = json.loads(message)
+    if prompt is None and 'result' in data:
+        if data['result'] == 0:
+            prompt = MyPrompt(ws)
+            prompt.prompt = '> '
+            prompt.intro = 'Starting prompt...'
+            _thread.start_new_thread(prompt.cmdloop, ())
+            return
+        elif data['result'] == 1:
+            print("Unknown user/password combination.")
+        elif data['result'] == 2:
+            print("Username already taken.")
+        elif data['result'] == 3:
+            print("Not logged in.")
+        ws.close()
     if 'username' in data:
         player_data = data
     elif 'server' in data:
@@ -176,7 +193,7 @@ def on_open(username, password, register=False):
         })
     return run
 
-def main():
+def connect():
     ws = websocket.WebSocketApp("ws://localhost:6060",
                               on_message = on_message,
                               on_error = on_error,
@@ -197,9 +214,10 @@ def main():
         ws.run_forever()
     _thread.start_new_thread(run, ())
 
-    prompt = MyPrompt(ws)
-    prompt.prompt = '> '
-    prompt.cmdloop('Starting prompt...')
+def main():
+    connect()
+    while True:
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()
