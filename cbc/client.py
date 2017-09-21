@@ -210,7 +210,11 @@ def connect():
         print("1. Login")
         print("2. Register")
         print("> ", end="", flush=True)
-        option = int(input())
+        try:
+            option = int(input())
+        except ValueError:
+            print("Please enter an integer value.")
+            continue
 
     print("Username: ", end="", flush=True)
     username = input()
