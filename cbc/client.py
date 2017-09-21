@@ -103,7 +103,10 @@ class MyPrompt(Cmd):
         else:
             print("Not enough units.")
 
-
+    def do_logout(self, args):
+        """Log out."""
+        self.ws.close()
+        return True
 
     def do_resources(self, args):
         """List available resources."""
@@ -182,7 +185,10 @@ def on_error(ws, error):
     print(error)
 
 def on_close(ws):
-    print("### closed ###")
+    global prompt
+    print("### Connection to server closed ###")
+    prompt = None
+    connect()
 
 def on_open(username, password, register=False):
     def run(ws):
