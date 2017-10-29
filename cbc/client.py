@@ -62,9 +62,10 @@ class MyPrompt(Cmd):
 
     def do_missions(self, args):
         """List available missions."""
-        global player_data
+        global city_data
+
         global server_config
-        for i, mission in enumerate(player_data['missions']):
+        for i, mission in enumerate(city_data['missions']):
             print("{}. {}".format(i + 1, mission['name']))
             print("Units required:")
             for unit, count in mission['units'].items():
@@ -75,7 +76,7 @@ class MyPrompt(Cmd):
                 print("\t- {} x{}".format(resource, amount))
             print("-" * 20)
         option = 0
-        opt_len = len(player_data['missions'])
+        opt_len = len(city_data['missions'])
         while option not in range(1, opt_len + 1):
             print("[1-{}] or 'c' to cancel: ".format(opt_len), end="", flush=True)
             try:
@@ -86,11 +87,11 @@ class MyPrompt(Cmd):
                     option = int(option)
             except ValueError:
                 print("Please enter an integer.")
-        mission = player_data['missions'][option - 1]
+        mission = city_data['missions'][option - 1]
         units_required = dict(mission['units'])
         units = list()
         if mission['type'] == 'gather':
-            for i, unit in enumerate(player_data['units']):
+            for i, unit in enumerate(city_data['units']):
                 if unit['type'] in units_required.keys() and units_required[unit['type']] > 0:
                     units.append(i)
                     units_required[unit['type']] -= 1
@@ -110,21 +111,22 @@ class MyPrompt(Cmd):
 
     def do_resources(self, args):
         """List available resources."""
-        global player_data
-        for resource, amount in player_data['resources'].items():
+        global city_data
+        for resource, amount in city_data['resources'].items():
             print("{}: {} / {} ({}/s)".format(
                 resource.title(),
                 int(amount),
-                player_data['resources_max'][resource],
-                player_data['resources_production'][resource]
+                city_data['resources_max'][resource],
+                city_data['resources_production'][resource]
             ))
 
     def do_buildings(self, args):
         """List the buildings of the city and their levels."""
-        global player_data
+        global city_data
         global server_config
+        global city
         any_building = False
-        for name, level in player_data['buildings'].items():
+        for name, level in city_data['buildings'].items():
             if level > 0:
                 any_building = True
                 print("{}, level {}".format(server_config['building'][name]['name'], level))
@@ -133,10 +135,10 @@ class MyPrompt(Cmd):
 
     def do_units(self, args):
         """List available units."""
-        global player_data
+        global city_data
         global server_config
-        if player_data['units']:
-            for unit in player_data['units']:
+        if city_data['units']:
+            for unit in city_data['units']:
                 print("{}, level {}".format(server_config['unit'][unit['type']]['name'], unit['level']))
         else:
             print("There are no units in this city.")
@@ -153,12 +155,15 @@ class MyPrompt(Cmd):
         pass
 
 prompt = None
+city = 0
 
 def send_json(ws, message):
-    ws.send(json.dumps(message))
+    global city
+    ws.send(json.dumps(dict(message, city_index=city)))
 
 def on_message(ws, message):
     global player_data
+    global city_data
     global server_config
     global prompt
     data = json.loads(message)
@@ -178,6 +183,7 @@ def on_message(ws, message):
         ws.close()
     if 'username' in data:
         player_data = data
+        city_data = player_data['cities'][city]
     elif 'server' in data:
         server_config = data
 
